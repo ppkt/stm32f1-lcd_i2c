@@ -78,6 +78,13 @@ void hd44780_go_to_line(u8 line) {
 	}
 }
 
+void hd44780_go_to(u8 row, u8 col) {
+    hd44780_go_to_line(row);
+    u8 i = 0;
+    while (i++ < col)
+        hd44780_cmd(0x14);
+}
+
 void hd44780_cgram_write(u8 pos, u8 data[8]) {
 	if (pos > 7) {
 		return;
@@ -95,11 +102,13 @@ void hd44780_init(TIM_TypeDef *t) {
 	// Setup clock
 	if (timer == TIM2)
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	else if (timer == TIM3)
+	    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 	else
 		while(1){} // not implemented
 	TIM_TimeBaseInitTypeDef TIM_InitStructure;
 	TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_InitStructure.TIM_Prescaler = 24 - 1;
+	TIM_InitStructure.TIM_Prescaler = 72 - 1;
 	TIM_InitStructure.TIM_Period = 10000 - 1; // Update event every 10000 us / 10 ms
 	TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_InitStructure.TIM_RepetitionCounter = 0;
@@ -110,9 +119,9 @@ void hd44780_init(TIM_TypeDef *t) {
 	data[0] = 0x00 | backlight;
 	data[1] = 0x00 | backlight;
 
-	GPIO_SetBits(GPIOC, GPIO_Pin_8);
-	delay_us(timer, 250);
-	GPIO_ResetBits(GPIOC, GPIO_Pin_8);
+//	GPIO_SetBits(GPIOC, GPIO_Pin_8);
+//	delay_us(timer, 250);
+//	GPIO_ResetBits(GPIOC, GPIO_Pin_8);
 
 	// Reset all
 	I2C_Master_BufferWrite(I2C1, data, 1, Polling, hd44780_address << 1);
@@ -128,23 +137,24 @@ void hd44780_init(TIM_TypeDef *t) {
 	hd44780_cmd(0x06); // set direction of cursor to right
 	hd44780_cmd(0x01); // clear display, go to 0x0
 	hd44780_cmd(0x0E); // turn on display, set solid cursor
+	hd44780_cmd(0x0C); // turn on display, set invisiblecursor
 
 	hd44780_cgram_write(0, (u8[]){0,10,31,31,14,4,0,0});
 	hd44780_cgram_write(1, (u8[]){0,10,21,17,10,4,0,0});
 
 	hd44780_cmd(0x01); // clear display, go to 0x0
 
-	hd44780_backlight(true);
-	hd44780_print("Linia 0");
-	hd44780_go_to_line(1);
-	hd44780_print("Linia 1");
-	hd44780_go_to_line(2);
-	hd44780_print("Linia 2");
-	hd44780_go_to_line(3);
-	hd44780_print("Linia 3");
+//	hd44780_backlight(true);
+//	hd44780_print("Linia 0");
+//	hd44780_go_to_line(1);
+//	hd44780_print("Linia 1");
+//	hd44780_go_to_line(2);
+//	hd44780_print("Linia 2");
+//	hd44780_go_to_line(3);
+//	hd44780_print("Linia 3");
 
-	hd44780_char(0);
-	hd44780_char(1);
+//	hd44780_char(0);
+//	hd44780_char(1);
 }
 
 
